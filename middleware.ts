@@ -4,7 +4,16 @@ import { COOKIE_SESION, configAuth, sesionValida } from "./lib/auth";
 // Todo el sitio exige sesión de Google con un correo permitido.
 // Públicas solo: la pantalla de login, el inicio/fin del flujo OAuth y los archivos estáticos
 // del build (/_next/static: solo código y CSS, sin datos).
-const PUBLICAS = ["/login", "/api/auth/login", "/api/auth/callback", "/api/auth/logout"];
+// El manifest y los íconos (sin datos) son públicos para que iOS pueda instalar la app.
+const PUBLICAS = [
+  "/login",
+  "/api/auth/login",
+  "/api/auth/callback",
+  "/api/auth/logout",
+  "/manifest.webmanifest",
+  "/icon",
+  "/apple-icon",
+];
 
 const cabeceras = { "X-Robots-Tag": "noindex, nofollow", "Cache-Control": "no-store" };
 

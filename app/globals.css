@@ -55,7 +55,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
-main { max-width: 640px; margin: 0 auto; padding: 14px 12px 36px; display: grid; gap: 12px; }
+main {
+  max-width: 640px; margin: 0 auto; display: grid; gap: 12px;
+  /* respeta la barra de estado y el borde inferior del iPhone cuando se abre como app */
+  padding: calc(14px + env(safe-area-inset-top)) 12px calc(36px + env(safe-area-inset-bottom));
+}
 h1 { font-family: var(--serif); font-size: 1.5rem; margin: 6px 2px 0; }
 h2 { font-size: 0.98rem; font-weight: 600; margin: 0 0 8px; }
 .card {
