@@ -1,0 +1,44 @@
+[
+ {
+  "cuenta": "Banchile Inversiones",
+  "tipo": "inversion",
+  "monto_clp": 52500000,
+  "detalle": "Inversiones en Chile (Banco de Chile)"
+ },
+ {
+  "cuenta": "Banco",
+  "tipo": "banco",
+  "monto_clp": 3442095,
+  "detalle": "Dos cuentas: 83.188 + 3.358.907"
+ },
+ {
+  "cuenta": "Deuda de Kaiken",
+  "tipo": "por_cobrar",
+  "monto_clp": 30358318,
+  "detalle": "Lo que te debe la empresa"
+ },
+ {
+  "cuenta": "Deudas de personas",
+  "tipo": "por_cobrar",
+  "monto_clp": 69000,
+  "detalle": "Tu papá te debe"
+ },
+ {
+  "cuenta": "Galan (ASX: GLN)",
+  "tipo": "planeada",
+  "monto_clp": 0,
+  "detalle": "Acción que ya no tienes; planeas volver a comprar"
+ },
+ {
+  "cuenta": "Acciones IBH",
+  "tipo": "acciones_empresa",
+  "monto_clp": 22500000,
+  "detalle": "Bonos trimestrales (Quarter) pagados en acciones"
+ },
+ {
+  "cuenta": "Deudas TC",
+  "tipo": "deuda",
+  "monto_clp": -31332237,
+  "detalle": "Visa 10.661.263 + Mastercard 20.670.974"
+ }
+]

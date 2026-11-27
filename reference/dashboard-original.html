@@ -1,0 +1,673 @@
+<meta name="dash-one-writer">
+<meta name="dash-form" content="freeform">
+<style>
+  .bs { max-width: 680px; margin: 0 auto; font-family: var(--font-anthropic-sans); color: var(--color-fg); }
+  .bs * { box-sizing: border-box; }
+  .bs-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0 0 var(--cds-gap-sm); }
+  .bs-lead { margin: 0 0 var(--cds-gap-md); font-size: var(--cds-font-size-body); color: var(--color-fg-muted); line-height: 1.5; }
+  .bs-stage { position: sticky; top: 0; z-index: 3; background: var(--color-bg); padding: var(--cds-pad-sm) 0; border-bottom: 1px solid var(--color-border-line); }
+  .bs-chart { position: relative; min-height: 230px; }
+  .bs-chart svg text { font-family: var(--font-anthropic-sans); font-variant-numeric: tabular-nums; }
+  .bs-chart .bs-axis text { fill: var(--cds-text-secondary); font-size: 12px; }
+  .bs-chapter { min-height: 62vh; display: flex; flex-direction: column; justify-content: center; padding: var(--cds-pad-xl) 0; opacity: 0.45; }
+  .bs-chapter.bs-active { opacity: 1; }
+  @media (prefers-reduced-motion: no-preference) { .bs-chapter { transition: opacity var(--cds-dur-slow) var(--cds-ease-out); } }
+  .bs-chapter h2 { margin: 0 0 var(--cds-gap-sm); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-weight: var(--cds-font-weight-medium); text-transform: none; }
+  .bs-chapter p { margin: 0; font-size: var(--cds-font-size-heading); line-height: 1.5; }
+  .bs-chapter b { font-weight: 500; white-space: nowrap; }
+  .bs-up { color: var(--color-ok); }
+  .bs-down { color: var(--color-bad); }
+  .bs-small { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: var(--cds-gap-md); line-height: 1.5; }
+  .bs-small p { font-size: inherit; }
+  .bs-pchart { display: none; margin-top: var(--cds-gap-md); }
+  .bs-tip { position: absolute; z-index: 4; display: none; flex-direction: column; gap: 2px; max-width: 240px; padding: 6px 8px; border-radius: 6px; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); box-shadow: var(--cds-shadow-popover); color: var(--cds-text-secondary); font-size: var(--cds-font-size-caption); pointer-events: none; }
+  .bs-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); margin-top: var(--cds-gap-lg); }
+  .bs-wrap { overflow-x: auto; }
+  .bs-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-body); }
+  .bs-table th { text-align: left; font-weight: var(--cds-font-weight-medium); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); padding: 6px 8px 6px 0; border-bottom: 1px solid var(--color-border-line); }
+  .bs-table td { padding: 8px 8px 8px 0; border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+  .bs-table .bs-num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .bs-table .bs-det { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); min-width: 120px; }
+  .bs-foot { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: var(--cds-gap-lg) 0 0; }
+  @media print {
+    .bs-stage { display: none; }
+    .bs-chapter { break-before: page; min-height: 0; opacity: 1; padding: var(--cds-pad-lg) 0; }
+    .bs-chapter:first-of-type { break-before: auto; }
+    .bs-pchart { display: block; }
+    .bs-card { break-before: page; }
+  }
+  .bs-lead b { background: color-mix(in srgb, var(--color-ok) 16%, transparent); border-radius: 8px; padding: 0 8px; font-weight: 600; }
+  .bs-card { box-shadow: 0 2px 10px color-mix(in srgb, var(--color-fg) 8%, transparent); }
+  .bs-small b { font-weight: 600; }
+  .bs-h2 { margin: 0 0 var(--cds-gap-md); font-size: var(--cds-font-size-heading); font-weight: 600; }
+  .bs-card + .bs-card { margin-top: var(--cds-gap-lg); }
+  .bs-chart { min-height: 90px; }
+  .bs-ranges { display: flex; gap: var(--cds-gap-xs); margin-bottom: var(--cds-gap-sm); }
+  .bs-rng { font: inherit; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); background: none; border: 1px solid var(--color-border-line); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+  .bs-rng.bs-on { color: var(--color-fg); background: var(--color-bg); border-color: var(--color-fg-muted); }
+  .bs-hvar { display: flex; align-items: baseline; gap: var(--cds-gap-sm); flex-wrap: wrap; margin-bottom: var(--cds-gap-xs); }
+  .bs-hvar b { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-heading); font-variant-numeric: tabular-nums; }
+  .bs-legend { display: flex; gap: var(--cds-gap-md); flex-wrap: wrap; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: var(--cds-gap-xs); }
+  .bs-sec { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--cds-gap-sm); align-items: baseline; width: 100%; text-align: left; font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg); background: none; border: 1px solid transparent; border-radius: var(--cds-radius); padding: 8px; cursor: pointer; }
+  .bs-sec.bs-on { background: var(--color-bg); border-color: var(--color-border-line); }
+  .bs-sec .bs-trk { grid-column: 1 / -1; height: 16px; margin-top: 8px; }
+  .bs-sec .bs-trk i, .bs-comp .bs-trk i { display: block; height: 100%; border-radius: 8px; }
+  .bs-sec span:last-child, .bs-comp span:last-child { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .bs-detail { margin-top: var(--cds-gap-md); padding-top: var(--cds-gap-md); border-top: 1px solid var(--color-border-line); }
+  .bs-detail h3 { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+  .bs-comp { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--cds-gap-sm); align-items: baseline; margin-top: var(--cds-gap-sm); font-size: var(--cds-font-size-body); }
+  .bs-comp .bs-trk { grid-column: 1 / -1; height: 16px; margin-top: 6px; }
+  .bs-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--cds-gap-sm); min-height: 120px; }
+  .bs-tile { display: flex; flex-direction: column; gap: 4px; text-align: left; font: inherit; color: var(--color-fg); border: 0; border-radius: var(--cds-radius); padding: 12px 14px; cursor: pointer; min-width: 0; border-top: 6px solid transparent; }
+  .bs-tile .bs-tn { font-size: var(--cds-font-size-caption); font-weight: 600; color: #26364f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bs-tile b { font-family: var(--font-anthropic-serif); font-weight: 600; font-size: var(--cds-font-size-heading); font-variant-numeric: tabular-nums; white-space: nowrap; color: #0e1a2e; }
+  .bs-tile .bs-ts { font-size: var(--cds-font-size-caption); color: #3b4d68; }
+  .bs-total { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; margin-top: var(--cds-gap-md); padding: var(--cds-pad-lg); border-radius: var(--cds-radius); background: color-mix(in srgb, var(--color-ok) 13%, var(--color-panel)); border: 2px solid color-mix(in srgb, var(--color-ok) 35%, transparent); }
+  .bs-total b { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 1.15; }
+  .bs-total .bs-k { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .bs-top { margin-top: var(--cds-gap-sm); }
+</style>
+<main class="bs">
+  <header>
+    <h1 class="bs-title">Balance Pedro</h1>
+  </header>
+
+  <section class="bs-card bs-top" id="resumen" aria-label="Resumen de tu patrimonio">
+    <div class="bs-tiles dash-skeleton" data-draw="top-tiles" data-source="cuentas"></div>
+    <div class="bs-total">
+      <span class="bs-k">Patrimonio total</span>
+      <b class="dash-skeleton" data-draw="top-total" data-source="resumen" data-field="patrimonio" data-row="0">—</b>
+      <span class="bs-k">Líquido + acciones IBH, con las deudas ya descontadas</span>
+    </div>
+  </section>
+
+  <p class="bs-lead" style="font-size:var(--cds-font-size-heading);color:var(--color-fg)">Tu patrimonio crece a un ritmo de <b data-draw="c5-ahorro" data-source="resumen" data-field="ahorro" data-row="0">—</b> al mes: hoy suma <b data-draw="c1-total" data-source="resumen" data-field="patrimonio" data-row="0">—</b>, y a este paso llegaría a <b data-draw="c5-12" data-source="proyeccion" data-field="patrimonio" data-where="meses=12">—</b> en un año.</p>
+
+  <section class="bs-card" id="historia">
+    <h2 class="bs-h2">Cómo ha ido subiendo tu patrimonio</h2>
+    <div class="bs-ranges" role="group" aria-label="Período">
+      <button class="bs-rng bs-on" data-range="all" aria-pressed="true">Todo</button>
+      <button class="bs-rng" data-range="12" aria-pressed="false">1 año</button>
+      <button class="bs-rng" data-range="6" aria-pressed="false">6 meses</button>
+    </div>
+    <div class="bs-chart dash-skeleton" data-draw="historia" data-source="serie"></div>
+    <p class="bs-small">La línea punteada es una estimación: supone que ahorraste lo mismo cada mes desde <b data-draw="h-ini" data-source="parametros" data-field="inicio" data-row="0">—</b> hasta hoy, con el patrimonio que tienes ahora como punto final. Los puntos son registros reales: cada vez que me mandas tus montos puedo guardar uno, y con el tiempo la línea se vuelve real.</p>
+  </section>
+
+  <section class="bs-card" id="ritmo">
+    <h2 class="bs-h2">Hacia dónde va tu patrimonio en 12 meses</h2>
+    <div class="bs-chart dash-skeleton" data-draw="w-ritmo" data-source="cuentas resumen parametros proyeccion banchile"></div>
+    <p class="bs-small">Promedio desde <b data-draw="c5-ini" data-source="parametros" data-field="inicio" data-row="0">—</b>: <b data-draw="c5-meses" data-source="resumen" data-field="meses" data-row="0">—</b> meses con sueldo pagado. Proyección lineal: no incluye rentabilidad ni cambios de sueldo.</p>
+  </section>
+
+  <section class="bs-card" id="composicion">
+    <h2 class="bs-h2">De qué está hecho lo que tienes</h2>
+    <div class="bs-chart dash-skeleton" data-draw="w-stack" data-source="cuentas"></div>
+    <p class="bs-small">Tus tarjetas restan <b data-draw="c3-tc" data-source="resumen" data-field="deuda_tc" data-row="0">—</b> y Kaiken te debe <b data-draw="c3-kai" data-source="resumen" data-field="kaiken" data-row="0">—</b>: neto <b data-draw="c3-neto" data-source="resumen" data-field="neto_tc_kaiken" data-row="0">—</b>. Líquido: <b data-draw="c2-liq" data-source="resumen" data-field="liquido" data-row="0">—</b>; acciones IBH: <b data-draw="c2-acc" data-source="resumen" data-field="acciones" data-row="0">—</b>.</p>
+  </section>
+
+  <section class="bs-card" id="sectores">
+    <h2 class="bs-h2">Desglose por sector</h2>
+    <p class="bs-small" style="margin:0 0 var(--cds-gap-sm)">Toca un sector para ver de qué está hecho.</p>
+    <div class="bs-chart dash-skeleton" data-draw="sectores" data-source="sectores cuentas"></div>
+  </section>
+
+  <section class="bs-card" id="inversiones">
+    <h2 class="bs-h2">Tus inversiones: aportado frente a hoy</h2>
+    <div class="bs-chart dash-skeleton" data-draw="w-banchile" data-source="cuentas resumen parametros proyeccion banchile"></div>
+    <p class="bs-small">Banchile: aportaste <b data-draw="bn-ap" data-source="banchile" data-field="aportado" data-row="0">—</b> y hoy valen <b data-draw="bn-val" data-source="banchile" data-field="valor" data-row="0">—</b>, <b data-draw="bn-pct" data-source="banchile" data-field="rent_pct" data-row="0">—</b>. No considera cuándo aportaste.</p>
+    <div class="bs-chart dash-skeleton" data-draw="w-etoro" data-source="cuentas resumen parametros proyeccion banchile" style="margin-top:var(--cds-gap-md)"></div>
+    <p class="bs-small">Etoro: de <b data-draw="c4-ini" data-source="parametros" data-field="etoro_inicio_usd" data-row="0">—</b> a <b data-draw="c4-act" data-source="parametros" data-field="etoro_actual_usd" data-row="0">—</b>, <b data-draw="c4-pct" data-source="resumen" data-field="etoro_rent_pct" data-row="0">—</b>. Al dólar de <b data-draw="c4-fx" data-source="dolar" data-field="usd_clp" data-row="0">—</b> del <b data-draw="c4-fecha" data-source="dolar" data-field="fecha" data-row="0">—</b>, son <b data-draw="c4-clp" data-source="cuentas" data-field="monto_clp" data-where="cuenta=Etoro">—</b> (tipo de cambio de referencia, no el precio exacto de Etoro).</p>
+  </section>
+
+  <section class="bs-card" id="detalle">
+    <h2 class="bs-h2">Detalle de partidas</h2>
+    <div class="bs-wrap">
+      <table class="bs-table" data-source="cuentas" data-row-key="cuenta">
+        <thead><tr><th data-field="cuenta">Cuenta</th><th class="bs-num" data-field="monto_clp">Monto</th><th data-field="detalle">Detalle</th></tr></thead>
+        <tbody data-draw="tabla"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <p class="bs-foot">Montos al 27 de noviembre de 2026, según lo que me indicaste. El dólar se consulta cada vez que abres el dashboard.</p>
+</main>
+<script>
+const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const nf = (n, d = 0) => Number(n).toLocaleString('es-CL', { minimumFractionDigits: d, maximumFractionDigits: d });
+const clp = (n) => (n < 0 ? '−' : '') + '$' + nf(Math.abs(Math.round(n)));
+const sclp = (n) => (n < 0 ? '−' : '+') + '$' + nf(Math.abs(Math.round(n)));
+const mm = (n, d = 1) => (n < 0 ? '−' : '') + '$' + nf(Math.abs(n) / 1e6, d) + ' M';
+const usd = (n) => 'US$' + nf(n);
+const susd = (n) => (n < 0 ? '−' : '+') + 'US$' + nf(Math.abs(n));
+const ym = (s) => { const p = String(s).split('-'); return MESES[Number(p[1]) - 1] + ' ' + p[0]; };
+const ymd = (s) => { const p = String(s).split('-'); return Number(p[2]) + ' ' + MESES[Number(p[1]) - 1] + ' ' + p[0]; };
+
+dash.loader('dolar', {
+  description: 'Toma el tipo de cambio USD a CLP de la respuesta del conector.',
+  fn: ({ answer }) => {
+    const list = Array.isArray(answer) ? answer : (answer && answer.rates) || [];
+    return list.filter((r) => r.quote === 'CLP').map((r) => ({ fecha: r.date, usd_clp: Number(r.rate) }));
+  }
+});
+
+dash.calc('cuentas', {
+  title: 'Cuentas con Etoro en pesos',
+  description: 'Partidas del balance más Etoro, convertido de dólares a pesos con el tipo de cambio del día.',
+  inputs: ['partidas', 'parametros', 'dolar'],
+  fn: (partidas, parametros, dolar) => {
+    const p = parametros && parametros[0];
+    const d = dolar && dolar[0];
+    if (!p || !d || !partidas || !partidas.length) return [];
+    const usd = Number(p.etoro_actual_usd);
+    const fx = Number(d.usd_clp);
+    const etoro = {
+      cuenta: 'Etoro', tipo: 'inversion', monto_clp: Math.round(usd * fx),
+      detalle: 'Acciones en EE.UU.: US$' + usd.toLocaleString('es-CL') + ' al dólar de $' + fx.toLocaleString('es-CL', { maximumFractionDigits: 2 })
+    };
+    return [partidas[0], etoro].concat(partidas.slice(1));
+  }
+});
+
+dash.calc('resumen', {
+  title: 'Resumen del balance',
+  description: 'Totales, ahorro mensual y rentabilidad de Etoro calculados desde las cuentas y los parámetros.',
+  inputs: ['cuentas', 'parametros'],
+  fn: (partidas, parametros) => {
+    const p = parametros && parametros[0];
+    if (!p || !partidas || !partidas.length) return [];
+    const sum = (f) => partidas.filter(f).reduce((a, r) => a + Number(r.monto_clp), 0);
+    const patrimonio = sum(() => true);
+    const acciones = sum((r) => r.tipo === 'acciones_empresa');
+    const liquido = patrimonio - acciones;
+    const sp = String(p.inicio).split('-');
+    const hoy = new Date();
+    const meses = (hoy.getFullYear() - Number(sp[0])) * 12 + (hoy.getMonth() + 1) - Number(sp[1]);
+    const bono = Number(p.bono_quarter_clp);
+    const e0 = Number(p.etoro_inicio_usd);
+    const e1 = Number(p.etoro_actual_usd);
+    const etoroClp = sum((r) => r.cuenta === 'Etoro');
+    const kaiken = sum((r) => String(r.cuenta).indexOf('Kaiken') >= 0);
+    const deudaTc = sum((r) => r.tipo === 'deuda');
+    return [{
+      patrimonio, liquido, acciones, meses,
+      ahorro: patrimonio / meses,
+      bono_quarter: bono,
+      banco: sum((r) => r.tipo === 'banco'),
+      inversiones: sum((r) => r.tipo === 'inversion' || r.tipo === 'planeada'),
+      kaiken, deuda_tc: deudaTc,
+      neto_tc_kaiken: kaiken + deudaTc,
+      etoro_rent_usd: e1 - e0,
+      etoro_rent_pct: (e1 - e0) / e0,
+      usd_clp: etoroClp / e1
+    }];
+  }
+});
+
+dash.calc('proyeccion', {
+  title: 'Proyección a 12 meses',
+  description: 'Patrimonio actual más el ahorro mensual promedio por cada mes futuro.',
+  inputs: ['resumen'],
+  fn: (resumen) => {
+    const r = resumen && resumen[0];
+    if (!r) return [];
+    return Array.from({ length: 13 }, (_, m) => ({ meses: m, patrimonio: r.patrimonio + r.ahorro * m }));
+  }
+});
+
+
+dash.calc('banchile', {
+  title: 'Rentabilidad de Banchile',
+  description: 'Valor actual en Banchile frente a lo aportado en ETF y fondos mutuos.',
+  inputs: ['partidas', 'aportes'],
+  fn: (partidas, aportes) => {
+    const row = partidas && partidas.find((r) => r.cuenta === 'Banchile Inversiones');
+    if (!row || !aportes || !aportes.length) return [];
+    const suma = (tipo) => aportes.filter((a) => a.tipo === tipo).reduce((s, a) => s + Number(a.aporte_clp), 0);
+    const aportado = aportes.reduce((s, a) => s + Number(a.aporte_clp), 0);
+    const valor = Number(row.monto_clp);
+    return [{ aportado, aporte_etf: suma('ETF'), aporte_fm: suma('Fondos mutuos'), valor, ganancia: valor - aportado, rent_pct: (valor - aportado) / aportado }];
+  }
+});
+
+function put(el, row, text, st) {
+  if (row) { el.classList.remove('dash-skeleton'); el.textContent = text; }
+  else { el.textContent = '—'; if (st !== 'loading') el.classList.remove('dash-skeleton'); }
+}
+function fromSrc(name, src, field, fmt, cls) {
+  dash.draw(name, (el) => {
+    const r = dash.data(src);
+    const row = r.status === 'ok' && r.data && r.data[0];
+    put(el, row, row ? fmt(row[field]) : '', r.status);
+    if (cls && row) { el.classList.toggle('bs-up', row[field] >= 0); el.classList.toggle('bs-down', row[field] < 0); }
+  });
+}
+fromSrc('c1-total', 'resumen', 'patrimonio', clp);
+fromSrc('c2-liq', 'resumen', 'liquido', clp);
+fromSrc('c2-acc', 'resumen', 'acciones', clp);
+fromSrc('c2-n', 'parametros', 'bonos_pagados', (v) => nf(v));
+fromSrc('c2-bono', 'resumen', 'bono_quarter', clp);
+fromSrc('c2-prox', 'parametros', 'proximo_bono', ym);
+fromSrc('c3-kai', 'resumen', 'kaiken', clp);
+fromSrc('c3-tc', 'resumen', 'deuda_tc', clp);
+fromSrc('c3-neto', 'resumen', 'neto_tc_kaiken', sclp);
+fromSrc('c4-ini', 'parametros', 'etoro_inicio_usd', usd);
+fromSrc('c4-act', 'parametros', 'etoro_actual_usd', usd);
+fromSrc('c4-pct', 'resumen', 'etoro_rent_pct', (v) => (v < 0 ? '−' : '+') + nf(Math.abs(v) * 100, 1) + '%', true);
+fromSrc('c4-fx', 'dolar', 'usd_clp', (v) => '$' + nf(v, 2));
+fromSrc('c4-fecha', 'dolar', 'fecha', ymd);
+fromSrc('c5-ini', 'parametros', 'inicio', ym);
+fromSrc('c5-ahorro', 'resumen', 'ahorro', clp);
+fromSrc('c5-meses', 'resumen', 'meses', (v) => nf(v));
+fromSrc('bn-ap', 'banchile', 'aportado', clp);
+fromSrc('bn-etf', 'banchile', 'aporte_etf', clp);
+fromSrc('bn-fm', 'banchile', 'aporte_fm', clp);
+fromSrc('bn-val', 'banchile', 'valor', clp);
+fromSrc('bn-gan', 'banchile', 'ganancia', sclp, true);
+fromSrc('bn-pct', 'banchile', 'rent_pct', (v) => (v < 0 ? '−' : '+') + nf(Math.abs(v) * 100, 1) + '%', true);
+
+dash.draw('c4-clp', (el) => {
+  const r = dash.data('cuentas');
+  const row = r.status === 'ok' && r.data && r.data.find((x) => x.cuenta === 'Etoro');
+  put(el, row, row ? clp(Number(row.monto_clp)) : '', r.status);
+});
+dash.draw('c5-12', (el) => {
+  const r = dash.data('proyeccion');
+  const row = r.status === 'ok' && r.data && r.data.find((x) => Number(x.meses) === 12);
+  put(el, row, row ? clp(Number(row.patrimonio)) : '', r.status);
+});
+
+dash.draw('tabla', (tb) => {
+  const d = dash.data('cuentas');
+  if (d.status !== 'ok') { tb.replaceChildren(); return; }
+  tb.replaceChildren(...d.data.map((r) => {
+    const tr = document.createElement('tr');
+    const a = document.createElement('td'); a.textContent = r.cuenta;
+    const b = document.createElement('td'); b.className = 'bs-num'; b.textContent = clp(Number(r.monto_clp));
+    const c = document.createElement('td'); c.className = 'bs-det'; c.textContent = r.detalle || '';
+    tr.append(a, b, c);
+    return tr;
+  }));
+});
+
+function stepModel(step) {
+  const c = dash.data('cuentas'), r = dash.data('resumen'), p = dash.data('parametros'), y = dash.data('proyeccion'), bn = dash.data('banchile');
+  const ok = (x) => x.status === 'ok' && x.data && x.data.length;
+  if (!ok(c) || !ok(r) || !ok(p) || !ok(y) || !ok(bn)) {
+    const bad = [c, r, p, y, bn].some((x) => x.status === 'error');
+    return { error: bad };
+  }
+  const R = r.data[0], P = p.data[0], B = bn.data[0];
+  if (step === 0) {
+    const items = c.data.map((x) => ({ label: x.cuenta, v: Number(x.monto_clp), text: clp(Number(x.monto_clp)), sub: x.detalle }))
+      .filter((x) => x.v !== 0).sort((a, b) => b.v - a.v);
+    return { kind: 'bars', items, aria: 'Barras con el monto de cada partida de tu balance, de mayor a menor' };
+  }
+  if (step === 1) {
+    return { kind: 'bars', aria: 'Barras: líquido frente a acciones IBH', items: [
+      { label: 'Líquido', v: R.liquido, text: clp(R.liquido), sub: 'Todo menos las acciones IBH' },
+      { label: 'Acciones IBH', v: R.acciones, text: clp(R.acciones), sub: 'Bonos de Quarter' }] };
+  }
+  if (step === 2) {
+    return { kind: 'bars', aria: 'Barras: lo que te debe Kaiken frente a la deuda de tarjetas', items: [
+      { label: 'Kaiken te debe', v: R.kaiken, text: clp(R.kaiken), sub: 'Lo que te debe la empresa' },
+      { label: 'Deudas TC', v: R.deuda_tc, text: clp(R.deuda_tc), sub: 'Tarjetas de crédito' }] };
+  }
+  if (step === 3) {
+    return { kind: 'bars', aria: 'Barras: lo aportado a Banchile frente a su valor hoy', items: [
+      { label: 'Aportado', v: B.aportado, text: clp(B.aportado), muted: true, sub: 'ETF y fondos mutuos' },
+      { label: 'Valor hoy', v: B.valor, text: clp(B.valor), sub: 'Banchile Inversiones' }] };
+  }
+  if (step === 4) {
+    return { kind: 'bars', aria: 'Barras: valor de Etoro al inicio y hoy, en dólares', items: [
+      { label: 'Inicio', v: Number(P.etoro_inicio_usd), text: usd(Number(P.etoro_inicio_usd)), muted: true },
+      { label: 'Hoy', v: Number(P.etoro_actual_usd), text: usd(Number(P.etoro_actual_usd)) }] };
+  }
+  return { kind: 'line', pts: y.data.map((q) => ({ m: Number(q.meses), v: Number(q.patrimonio) })) };
+}
+
+function tipFor(el) {
+  const tip = document.createElement('div');
+  tip.className = 'bs-tip';
+  el.appendChild(tip);
+  return {
+    show(ev, title, sub) {
+      const b = el.getBoundingClientRect();
+      tip.replaceChildren();
+      const a = document.createElement('strong'); a.textContent = title; tip.appendChild(a);
+      if (sub) { const s = document.createElement('span'); s.textContent = sub; tip.appendChild(s); }
+      tip.style.display = 'flex';
+      const w = tip.offsetWidth;
+      tip.style.left = Math.max(0, Math.min(b.width - w, ev.clientX - b.left - w / 2)) + 'px';
+      tip.style.top = (ev.clientY - b.top + 14) + 'px';
+    },
+    hide() { tip.style.display = 'none'; }
+  };
+}
+
+function renderStep(el, step) {
+  const m = stepModel(step);
+  el.replaceChildren();
+  if (!m.kind) {
+    el.textContent = m.error ? 'No se pudo cargar este gráfico.' : '—';
+    if (m.error || !el.closest('[data-dash-state="loading"]')) el.classList.remove('dash-skeleton');
+    return;
+  }
+  el.classList.remove('dash-skeleton');
+  const W = Math.max(220, el.clientWidth);
+  const tip = tipFor(el);
+  if (m.kind === 'bars') {
+    const rowH = 60;
+    const max = d3.max(m.items, (r) => Math.abs(r.v)) || 1;
+    const svg = d3.select(el).append('svg').attr('width', W).attr('height', m.items.length * rowH + 4)
+      .attr('role', 'img').attr('aria-label', m.aria).style('display', 'block');
+    const g = svg.selectAll('g').data(m.items).enter().append('g').attr('transform', (r, i) => 'translate(0,' + i * rowH + ')');
+    g.append('text').attr('x', 0).attr('y', 17).style('fill', 'var(--color-fg)').style('font-size', '15px').text((r) => r.label);
+    g.append('text').attr('x', W).attr('y', 17).attr('text-anchor', 'end').style('fill', 'var(--color-fg)').style('font-size', '15px').text((r) => r.text);
+    g.append('rect').attr('x', 0).attr('y', 28).attr('height', 26).attr('rx', 8)
+      .attr('width', (r) => Math.max(2, W * Math.abs(r.v) / max))
+      .style('fill', (r, i) => r.v < 0 ? 'var(--color-bad)' : r.muted ? dash.colors[2] : dash.colors[i % dash.colors.length]);
+    g.append('rect').attr('x', 0).attr('y', 0).attr('width', W).attr('height', rowH).style('fill', 'transparent')
+      .on('pointerenter', (ev, r) => tip.show(ev, r.label + ' · ' + r.text, r.sub))
+      .on('pointermove', (ev, r) => tip.show(ev, r.label + ' · ' + r.text, r.sub))
+      .on('pointerleave', () => tip.hide());
+    return;
+  }
+  const H = 200, mg = { t: 30, r: 14, b: 28, l: 14 };
+  const pts = m.pts;
+  const x = d3.scaleLinear().domain([0, 12]).range([mg.l, W - mg.r]);
+  const y = d3.scaleLinear().domain([d3.min(pts, (p) => p.v) * 0.96, d3.max(pts, (p) => p.v) * 1.02]).range([H - mg.b, mg.t]);
+  const svg = d3.select(el).append('svg').attr('width', W).attr('height', H)
+    .attr('role', 'img').attr('aria-label', 'Línea con el patrimonio proyectado a 12 meses al ritmo de ahorro promedio').style('display', 'block');
+  svg.append('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', H - mg.b).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-axis)');
+  svg.append('path').datum(pts).attr('d', d3.line().x((p) => x(p.m)).y((p) => y(p.v)))
+    .style('fill', 'none').style('stroke', dash.colors[0]).style('stroke-width', 3.5);
+  const marks = pts.filter((p) => p.m % 3 === 0);
+  const ax = svg.append('g').attr('class', 'bs-axis');
+  marks.forEach((p) => ax.append('text').attr('x', x(p.m)).attr('y', H - 8)
+    .attr('text-anchor', p.m === 0 ? 'start' : p.m === 12 ? 'end' : 'middle').text(p.m === 0 ? 'Hoy' : p.m + ' m'));
+  svg.selectAll('circle.dot').data(marks).enter().append('circle').attr('class', 'dot')
+    .attr('cx', (p) => x(p.m)).attr('cy', (p) => y(p.v)).attr('r', 4).style('fill', dash.colors[0]);
+  [0, 6, 12].forEach((k) => {
+    const p = pts.find((q) => q.m === k);
+    if (p) svg.append('text').attr('x', x(k)).attr('y', y(p.v) - 10)
+      .attr('text-anchor', k === 0 ? 'start' : k === 12 ? 'end' : 'middle').style('fill', 'var(--color-fg)').style('font-size', '12px').text(mm(p.v));
+  });
+  svg.selectAll('circle.hit').data(marks).enter().append('circle').attr('class', 'hit')
+    .attr('cx', (p) => x(p.m)).attr('cy', (p) => y(p.v)).attr('r', 16).style('fill', 'transparent')
+    .on('pointerenter', (ev, p) => tip.show(ev, (p.m === 0 ? 'Hoy' : 'En ' + p.m + ' meses') + ' · ' + clp(p.v)))
+    .on('pointermove', (ev, p) => tip.show(ev, (p.m === 0 ? 'Hoy' : 'En ' + p.m + ' meses') + ' · ' + clp(p.v)))
+    .on('pointerleave', () => tip.hide());
+}
+
+
+dash.draw('h-ini', (el) => {
+  const r = dash.data('parametros');
+  const row = r.status === 'ok' && r.data && r.data[0];
+  put(el, row, row ? ym(row.inicio) : '', r.status);
+});
+
+dash.calc('serie', {
+  title: 'Patrimonio en el tiempo',
+  description: 'Trayectoria estimada al ahorro mensual promedio, más los registros reales de patrimonio que me has enviado.',
+  inputs: ['resumen', 'parametros', 'historial'],
+  fn: (resumen, parametros, historial) => {
+    const R = resumen && resumen[0], P = parametros && parametros[0];
+    if (!R || !P) return [];
+    const sp = String(P.inicio).split('-');
+    const y0 = Number(sp[0]), m0 = Number(sp[1]) - 1, n = Number(R.meses);
+    const out = [];
+    for (let k = 1; k <= n; k++) out.push({ fecha: new Date(Date.UTC(y0, m0 + k, 0)).toISOString().slice(0, 10), valor: R.ahorro * k, tipo: 'estimado', nota: '' });
+    (historial || []).forEach((h) => out.push({ fecha: String(h.fecha), valor: Number(h.patrimonio_clp), tipo: 'real', nota: h.nota || '' }));
+    return out.sort((a, b) => (a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : 0));
+  }
+});
+
+dash.calc('sectores', {
+  title: 'Desglose por sector',
+  description: 'De qué está hecha cada cuenta: aportes y ganancia en Banchile y Etoro, y el resto según lo que me indicaste.',
+  inputs: ['cuentas', 'componentes', 'banchile', 'aportes', 'parametros'],
+  fn: (cuentas, componentes, banchile, aportes, parametros) => {
+    const P = parametros && parametros[0], B = banchile && banchile[0];
+    if (!cuentas || !cuentas.length || !P || !B) return [];
+    const out = [];
+    cuentas.forEach((c) => {
+      const total = Number(c.monto_clp);
+      let parts;
+      if (c.cuenta === 'Banchile Inversiones') {
+        parts = (aportes || []).map((a) => ({ componente: a.instrumento + ' (aportado)', monto_clp: Number(a.aporte_clp) }));
+        parts.push({ componente: 'Ganancia acumulada', monto_clp: B.ganancia });
+      } else if (c.cuenta === 'Etoro') {
+        const ini = Math.round(Number(P.etoro_inicio_usd) * total / Number(P.etoro_actual_usd));
+        parts = [{ componente: 'Aportado (inicio)', monto_clp: ini }, { componente: 'Ganancia acumulada', monto_clp: total - ini }];
+      } else {
+        parts = (componentes || []).filter((x) => x.cuenta === c.cuenta).map((x) => ({ componente: x.componente, monto_clp: Number(x.monto_clp) }));
+      }
+      const rest = total - parts.reduce((s, x) => s + x.monto_clp, 0);
+      if (Math.abs(rest) >= 1) parts.push({ componente: parts.length ? 'Sin desglosar' : 'Total', monto_clp: rest });
+      parts.forEach((x, i) => out.push({ cuenta: c.cuenta, total_clp: total, detalle: c.detalle || '', componente: x.componente, monto_clp: x.monto_clp, orden: i }));
+    });
+    return out;
+  }
+});
+
+const histState = { range: 'all' };
+const fechaES = (d) => d.getUTCDate() + ' ' + MESES[d.getUTCMonth()] + ' ' + d.getUTCFullYear();
+dash.draw('historia', (el) => {
+  const s = dash.data('serie');
+  if (s.status !== 'ok' || !s.data || !s.data.length) {
+    el.replaceChildren();
+    el.textContent = s.status === 'error' ? 'No se pudo cargar este gráfico.' : '—';
+    if (s.status !== 'loading') el.classList.remove('dash-skeleton');
+    return;
+  }
+  el.classList.remove('dash-skeleton');
+  const parse = d3.utcParse('%Y-%m-%d');
+  const rows = s.data.map((r) => ({ d: parse(r.fecha), v: Number(r.valor), tipo: r.tipo, nota: r.nota })).filter((r) => r.d);
+  const months = { all: null, '12': 12, '6': 6 }[histState.range];
+  const lastD = d3.max(rows, (r) => r.d);
+  const from = months ? d3.utcMonth.offset(lastD, -months) : d3.min(rows, (r) => r.d);
+  const est = rows.filter((r) => r.tipo === 'estimado' && r.d >= from);
+  const real = rows.filter((r) => r.tipo === 'real' && r.d >= from);
+  const vis = est.concat(real).sort((a, b) => a.d - b.d);
+  el.replaceChildren();
+  if (est.length < 2) { el.textContent = 'Aún no hay suficientes datos para este período.'; return; }
+  const first = est[0], lastE = est[est.length - 1];
+  const head = document.createElement('div'); head.className = 'bs-hvar';
+  const big = document.createElement('b'); big.textContent = clp(lastE.v);
+  const dv = lastE.v - first.v, dp = first.v ? dv / first.v : 0;
+  const chg = document.createElement('span'); chg.className = dv >= 0 ? 'bs-up' : 'bs-down';
+  chg.textContent = (dv >= 0 ? '+' : '−') + clp(Math.abs(dv)).replace('−', '') + (histState.range === 'all' ? '' : ' (' + (dp >= 0 ? '+' : '−') + nf(Math.abs(dp) * 100, 1) + '%)');
+  const sub = document.createElement('span'); sub.className = 'bs-small'; sub.style.margin = '0';
+  sub.textContent = 'estimado, desde ' + fechaES(first.d);
+  head.append(big, chg, sub);
+  const W = Math.max(240, el.clientWidth), H = 240;
+  const mg = { t: 10, r: 58, b: 24, l: 6 };
+  const x = d3.scaleUtc().domain([from, lastD]).range([mg.l, W - mg.r]);
+  const vmin = d3.min(vis, (r) => r.v), vmax = d3.max(vis, (r) => r.v);
+  const lo = histState.range === 'all' ? 0 : vmin - (vmax - vmin) * 0.1;
+  const y = d3.scaleLinear().domain([lo, vmax * 1.04]).nice(4).range([H - mg.b, mg.t]);
+  const svg = d3.select(el).append('svg').attr('width', W).attr('height', H).attr('role', 'img')
+    .attr('aria-label', 'Línea con la evolución estimada del patrimonio y los registros reales, como un gráfico de acción').style('display', 'block').style('touch-action', 'pan-y');
+  y.ticks(4).forEach((tv) => {
+    svg.append('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', y(tv)).attr('y2', y(tv)).style('stroke', 'var(--cds-chart-grid)');
+    svg.append('text').attr('x', W - mg.r + 6).attr('y', y(tv) + 4).style('font-size', '11px').style('fill', 'var(--cds-text-secondary)').text('$' + nf(tv / 1e6, 0) + ' M');
+  });
+  const nt = Math.max(2, Math.floor((W - mg.l - mg.r) / 90));
+  x.ticks(nt).forEach((tv) => svg.append('text').attr('x', x(tv)).attr('y', H - 6).attr('text-anchor', 'middle')
+    .style('font-size', '11px').style('fill', 'var(--cds-text-secondary)').text(MESES[tv.getUTCMonth()] + ' ' + String(tv.getUTCFullYear()).slice(2)));
+  const area = d3.area().x((r) => x(r.d)).y0(H - mg.b).y1((r) => y(r.v));
+  svg.append('path').datum(est).attr('d', area).style('fill', dash.colors[0]).style('opacity', 0.1);
+  svg.append('path').datum(est).attr('d', d3.line().x((r) => x(r.d)).y((r) => y(r.v)))
+    .style('fill', 'none').style('stroke', dash.colors[0]).style('stroke-width', 3).style('stroke-dasharray', '5 4');
+  if (real.length > 1) svg.append('path').datum(real).attr('d', d3.line().x((r) => x(r.d)).y((r) => y(r.v)))
+    .style('fill', 'none').style('stroke', dash.colors[0]).style('stroke-width', 3.5);
+  svg.selectAll('circle.real').data(real).enter().append('circle').attr('class', 'real').attr('cx', (r) => x(r.d)).attr('cy', (r) => y(r.v))
+    .attr('r', 5).style('fill', dash.colors[0]).style('stroke', 'var(--color-panel)').style('stroke-width', 3);
+  const cross = svg.append('line').attr('y1', mg.t).attr('y2', H - mg.b).style('stroke', 'var(--cds-chart-axis)').style('display', 'none');
+  const dot = svg.append('circle').attr('r', 4).style('fill', dash.colors[0]).style('display', 'none');
+  const tip = tipFor(el);
+  const bis = d3.bisector((r) => r.d).center;
+  svg.append('rect').attr('x', mg.l).attr('y', 0).attr('width', W - mg.l - mg.r).attr('height', H).style('fill', 'transparent')
+    .on('pointermove', (ev) => {
+      const b = svg.node().getBoundingClientRect();
+      const r = vis[bis(vis, x.invert(ev.clientX - b.left))];
+      if (!r) return;
+      cross.attr('x1', x(r.d)).attr('x2', x(r.d)).style('display', null);
+      dot.attr('cx', x(r.d)).attr('cy', y(r.v)).style('display', null);
+      tip.show(ev, clp(r.v), fechaES(r.d) + (r.tipo === 'real' ? ' · registro real' : ' · estimado'));
+    })
+    .on('pointerleave', () => { cross.style('display', 'none'); dot.style('display', 'none'); tip.hide(); });
+  const legend = document.createElement('div'); legend.className = 'bs-legend';
+  const l1 = document.createElement('span'); l1.textContent = '┄ Estimado al ritmo promedio';
+  const l2 = document.createElement('span'); l2.textContent = '● Registro real';
+  legend.append(l1, l2);
+  el.insertBefore(head, svg.node());
+  el.appendChild(legend);
+});
+document.querySelectorAll('.bs-rng').forEach((b) => b.addEventListener('click', () => {
+  histState.range = b.getAttribute('data-range') || 'all';
+  document.querySelectorAll('.bs-rng').forEach((x) => { x.classList.toggle('bs-on', x === b); x.setAttribute('aria-pressed', String(x === b)); });
+  dash.draw('historia');
+}));
+
+const secState = { sel: null };
+dash.draw('sectores', (el) => {
+  const s = dash.data('sectores');
+  if (s.status !== 'ok' || !s.data || !s.data.length) {
+    el.replaceChildren();
+    el.textContent = s.status === 'error' ? 'No se pudo cargar este gráfico.' : '—';
+    if (s.status !== 'loading') el.classList.remove('dash-skeleton');
+    return;
+  }
+  el.classList.remove('dash-skeleton');
+  const names = [];
+  s.data.forEach((r) => { if (names.indexOf(r.cuenta) < 0) names.push(r.cuenta); });
+  const secs = names.map((n) => {
+    const parts = s.data.filter((r) => r.cuenta === n);
+    return { name: n, total: Number(parts[0].total_clp), detalle: parts[0].detalle, parts };
+  }).sort((a, b) => b.total - a.total);
+  const activos = d3.sum(secs.filter((q) => q.total > 0), (q) => q.total) || 1;
+  if (!secState.sel || !secs.some((q) => q.name === secState.sel)) secState.sel = secs[0].name;
+  const max = d3.max(secs, (q) => Math.abs(q.total)) || 1;
+  const wrap = document.createElement('div');
+  secs.forEach((q, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'bs-sec' + (q.name === secState.sel ? ' bs-on' : '');
+    b.setAttribute('aria-pressed', String(q.name === secState.sel));
+    const nm = document.createElement('span'); nm.textContent = q.name;
+    const vv = document.createElement('span'); vv.textContent = clp(q.total);
+    const trk = document.createElement('div'); trk.className = 'bs-trk';
+    const bar = document.createElement('i'); bar.style.width = Math.max(1, Math.abs(q.total) / max * 100) + '%';
+    bar.style.background = q.total < 0 ? 'var(--cds-chart-status-critical)' : dash.colors[i % dash.colors.length];
+    trk.appendChild(bar); b.append(nm, vv, trk);
+    b.addEventListener('click', () => { secState.sel = q.name; dash.draw('sectores'); });
+    wrap.appendChild(b);
+  });
+  const q = secs.find((z) => z.name === secState.sel);
+  const det = document.createElement('div'); det.className = 'bs-detail';
+  const h = document.createElement('h3'); h.textContent = q.name + ' · ' + clp(q.total);
+  const note = document.createElement('p'); note.className = 'bs-small'; note.style.margin = '4px 0 0';
+  const share = q.total > 0 ? nf(q.total / activos * 100, 1) + '% de tus activos. ' : '';
+  const gan = q.parts.find((r) => r.componente === 'Ganancia acumulada');
+  const rent = gan && q.total - Number(gan.monto_clp) > 0 ? ' Rentabilidad: ' + (Number(gan.monto_clp) >= 0 ? '+' : '−') + nf(Math.abs(Number(gan.monto_clp)) / (q.total - Number(gan.monto_clp)) * 100, 1) + '%.' : '';
+  note.textContent = share + (q.detalle || '') + rent;
+  det.append(h, note);
+  if (!q.parts.length) {
+    const none = document.createElement('p'); none.className = 'bs-small'; none.textContent = 'Todavía no hay montos en este sector.'; det.appendChild(none);
+  }
+  const pmax = d3.max(q.parts, (r) => Math.abs(Number(r.monto_clp))) || 1;
+  q.parts.forEach((r, i) => {
+    const v = Number(r.monto_clp);
+    const row = document.createElement('div'); row.className = 'bs-comp';
+    const a = document.createElement('span'); a.textContent = r.componente;
+    const c = document.createElement('span'); c.textContent = clp(v);
+    const trk = document.createElement('div'); trk.className = 'bs-trk';
+    const bar = document.createElement('i'); bar.style.width = Math.max(1, Math.abs(v) / pmax * 100) + '%';
+    bar.style.background = v < 0 ? 'var(--cds-chart-status-critical)' : r.componente === 'Ganancia acumulada' ? dash.colors[1] : dash.colors[(i + 2) % dash.colors.length];
+    trk.appendChild(bar); row.append(a, c, trk); det.appendChild(row);
+  });
+  el.replaceChildren(wrap, det);
+});
+
+fromSrc('top-total', 'resumen', 'patrimonio', clp);
+dash.draw('top-tiles', (el) => {
+  const c = dash.data('cuentas');
+  if (c.status !== 'ok' || !c.data || !c.data.length) {
+    el.replaceChildren();
+    el.textContent = c.status === 'error' ? 'No se pudo cargar este resumen.' : '—';
+    if (c.status !== 'loading') el.classList.remove('dash-skeleton');
+    return;
+  }
+  el.classList.remove('dash-skeleton');
+  const rows = c.data.map((r) => ({ name: r.cuenta, v: Number(r.monto_clp) }));
+  const grp = (v) => (v > 0 ? 0 : v === 0 ? 1 : 2);
+  rows.sort((a, b) => grp(a.v) - grp(b.v) || b.v - a.v);
+  const activos = d3.sum(rows.filter((r) => r.v > 0), (r) => r.v) || 1;
+  let pi = 0;
+  el.replaceChildren(...rows.map((r) => {
+    const col = r.v < 0 ? 'var(--color-bad)' : r.v === 0 ? 'var(--color-fg-muted)' : dash.colors[pi++ % dash.colors.length];
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'bs-tile';
+    b.style.background = 'linear-gradient(150deg, color-mix(in srgb, ' + col + ' 42%, #ffffff) 0%, color-mix(in srgb, ' + col + ' 16%, #ffffff) 100%)';
+    b.style.borderTopColor = col;
+    b.style.boxShadow = '0 6px 16px color-mix(in srgb, ' + col + ' 35%, transparent), inset 0 0 0 1px color-mix(in srgb, ' + col + ' 40%, transparent)';
+    b.style.color = '#0e1a2e';
+    const n = document.createElement('span'); n.className = 'bs-tn'; n.textContent = r.name;
+    const v = document.createElement('b'); v.textContent = clp(r.v);
+    const s = document.createElement('span'); s.className = 'bs-ts';
+    s.textContent = r.v < 0 ? 'Deuda' : r.v === 0 ? 'Sin monto por ahora' : nf(r.v / activos * 100, 0) + '% de tus activos';
+    b.append(n, v, s);
+    b.addEventListener('click', () => {
+      if (r.v === 0) return;
+      secState.sel = r.name; dash.draw('sectores');
+      const tgt = document.getElementById('sectores'); if (tgt && tgt.scrollIntoView) tgt.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    return b;
+  }));
+});
+
+dash.draw('w-ritmo', (el) => renderStep(el, 5));
+dash.draw('w-banchile', (el) => renderStep(el, 3));
+dash.draw('w-etoro', (el) => renderStep(el, 4));
+
+// One bar split into what each asset is, with a legend that carries the exact amounts.
+dash.draw('w-stack', (el) => {
+  const c = dash.data('cuentas');
+  if (c.status !== 'ok' || !c.data || !c.data.length) {
+    el.replaceChildren();
+    el.textContent = c.status === 'error' ? 'No se pudo cargar este gráfico.' : '—';
+    if (c.status !== 'loading') el.classList.remove('dash-skeleton');
+    return;
+  }
+  el.classList.remove('dash-skeleton');
+  const items = c.data.map((r) => Object.assign({}, r, { v: Number(r.monto_clp) })).filter((r) => r.v > 0).sort((a, b) => b.v - a.v);
+  const total = d3.sum(items, (r) => r.v) || 1;
+  el.replaceChildren();
+  const W = Math.max(220, el.clientWidth), H = 52;
+  const tip = tipFor(el);
+  const svg = d3.select(el).append('svg').attr('width', W).attr('height', H).attr('role', 'img')
+    .attr('aria-label', 'Una barra dividida por lo que tienes en cada cuenta, de mayor a menor').style('display', 'block');
+  let x0 = 0;
+  items.forEach((r, i) => {
+    const w = W * r.v / total;
+    svg.append('rect').attr('x', x0).attr('y', 0).attr('width', Math.max(1, w - 2)).attr('height', H).attr('rx', 10)
+      .style('fill', dash.colors[i % dash.colors.length])
+      .on('pointerenter', (ev) => tip.show(ev, r.cuenta + ' · ' + clp(r.v), nf(r.v / total * 100, 1) + '% de tus activos'))
+      .on('pointermove', (ev) => tip.show(ev, r.cuenta + ' · ' + clp(r.v), nf(r.v / total * 100, 1) + '% de tus activos'))
+      .on('pointerleave', () => tip.hide());
+    x0 += w;
+  });
+  const list = document.createElement('div');
+  list.style.cssText = 'display:flex;flex-direction:column;gap:6px;margin-top:12px;font-size:var(--cds-font-size-body)';
+  items.forEach((r, i) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px';
+    const sw = document.createElement('span');
+    sw.style.cssText = 'flex:none;width:10px;height:10px;border-radius:3px;background:' + dash.colors[i % dash.colors.length];
+    const nm = document.createElement('span'); nm.style.cssText = 'flex:1;min-width:0'; nm.textContent = r.cuenta;
+    const vv = document.createElement('span'); vv.style.cssText = 'font-variant-numeric:tabular-nums;white-space:nowrap';
+    vv.textContent = clp(r.v) + ' · ' + nf(r.v / total * 100, 0) + '%';
+    row.append(sw, nm, vv); list.appendChild(row);
+  });
+  el.append(list);
+});
+</script>

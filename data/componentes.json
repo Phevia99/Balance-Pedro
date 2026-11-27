@@ -1,0 +1,62 @@
+[
+ {
+  "cuenta": "Banco",
+  "componente": "Cuenta 1",
+  "monto_clp": 83188
+ },
+ {
+  "cuenta": "Banco",
+  "componente": "Cuenta 2",
+  "monto_clp": 3358907
+ },
+ {
+  "cuenta": "Deudas TC",
+  "componente": "Visa",
+  "monto_clp": -10661263
+ },
+ {
+  "cuenta": "Deudas TC",
+  "componente": "Mastercard",
+  "monto_clp": -20670974
+ },
+ {
+  "cuenta": "Acciones IBH",
+  "componente": "Bono Q2 2025",
+  "monto_clp": 3750000
+ },
+ {
+  "cuenta": "Acciones IBH",
+  "componente": "Bono Q3 2025",
+  "monto_clp": 3750000
+ },
+ {
+  "cuenta": "Acciones IBH",
+  "componente": "Bono Q4 2025",
+  "monto_clp": 3750000
+ },
+ {
+  "cuenta": "Acciones IBH",
+  "componente": "Bono Q1 2026",
+  "monto_clp": 3750000
+ },
+ {
+  "cuenta": "Acciones IBH",
+  "componente": "Bono Q2 2026",
+  "monto_clp": 3750000
+ },
+ {
+  "cuenta": "Acciones IBH",
+  "componente": "Bono Q3 2026",
+  "monto_clp": 3750000
+ },
+ {
+  "cuenta": "Deuda de Kaiken",
+  "componente": "Saldo a tu favor",
+  "monto_clp": 30358318
+ },
+ {
+  "cuenta": "Deudas de personas",
+  "componente": "Tu papá",
+  "monto_clp": 69000
+ }
+]

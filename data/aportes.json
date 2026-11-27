@@ -1,0 +1,6 @@
+[
+ {"instrumento": "ETF", "tipo": "ETF", "aporte_clp": 12714334},
+ {"instrumento": "Fondo mutuo 1", "tipo": "Fondos mutuos", "aporte_clp": 10000000},
+ {"instrumento": "Fondo mutuo 2", "tipo": "Fondos mutuos", "aporte_clp": 8500000},
+ {"instrumento": "Fondo mutuo 3", "tipo": "Fondos mutuos", "aporte_clp": 10221498}
+]
