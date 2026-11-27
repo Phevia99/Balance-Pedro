@@ -65,6 +65,9 @@ export default async function Page() {
         Montos al {fecha(fechaDatos)}. Dólar del {fecha(dolar.date)}.
         {dolar.fuente === "respaldo" && <span className="aviso"> (No se pudo consultar la API: se usa el último dólar guardado.)</span>}
       </p>
+      <form action="/api/auth/logout" method="post" style={{ textAlign: "center" }}>
+        <button className="salir" type="submit">Cerrar sesión</button>
+      </form>
     </main>
   );
 }

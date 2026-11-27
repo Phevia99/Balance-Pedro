@@ -16,7 +16,7 @@ export default function Proyeccion({ puntos }: { puntos: { m: number; v: number 
   return (
     <div className="card">
       <h2>Hacia dónde va tu patrimonio en 12 meses</h2>
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Proyección a 12 meses">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Proyección a 12 meses" style={{ maxWidth: 440, margin: "0 auto" }}>
         <path d={`${d} L${x(12)},${H - PB} L${x(0)},${H - PB} Z`} fill="var(--c1)" opacity="0.12" />
         <path d={d} fill="none" stroke="var(--c1)" strokeWidth="3" strokeLinecap="round" />
         {puntos.map((p) => (

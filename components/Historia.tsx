@@ -1,9 +1,9 @@
 "use client";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { PuntoHistoria } from "../lib/calc";
 import { clp, clpConSigno, fecha, mesCorto, millones, pct } from "../lib/format";
 
-const W = 360, H = 220, PL = 8, PR = 46, PT = 12, PB = 24;
+const PL = 8, PR = 46, PT = 12, PB = 24;
 type Rango = "todo" | "1a" | "6m";
 const t = (f: string) => Date.parse(f + "T00:00:00Z");
 
@@ -11,6 +11,18 @@ export default function Historia({ serie }: { serie: PuntoHistoria[] }) {
   const [rango, setRango] = useState<Rango>("todo");
   const [hover, setHover] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  // El gráfico se dibuja al tamaño real de su caja (1:1) para que el texto y las líneas se vean nítidos.
+  const [W, setW] = useState(340);
+  const H = Math.round(Math.min(Math.max(W * 0.55, 190), 250));
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const medir = () => setW(Math.max(260, Math.round(el.getBoundingClientRect().width)));
+    medir();
+    const ro = new ResizeObserver(medir);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const { pts, est, real, x, y, ticksY, ticksX } = useMemo(() => {
     const fin = t(serie[serie.length - 1].fecha);
@@ -28,7 +40,7 @@ export default function Historia({ serie }: { serie: PuntoHistoria[] }) {
     const ticksY = [0, 1, 2, 3].map((i) => lo + ((hi - lo) * i) / 3);
     const ticksX = [pts[0], pts[Math.floor(pts.length / 2)], pts[pts.length - 1]];
     return { pts, est: pts.filter((p) => p.tipo === "estimado"), real: pts.filter((p) => p.tipo === "real"), x, y, ticksY, ticksX };
-  }, [serie, rango]);
+  }, [serie, rango, W, H]);
 
   const path = (a: PuntoHistoria[]) => a.map((p, i) => `${i ? "L" : "M"}${x(p.fecha).toFixed(1)},${y(p.v).toFixed(1)}`).join(" ");
   const base = H - PB;
@@ -68,7 +80,7 @@ export default function Historia({ serie }: { serie: PuntoHistoria[] }) {
         ))}
       </div>
       <div className="chart-box" ref={ref} onPointerMove={mover} onPointerDown={mover} onPointerLeave={() => setHover(null)}>
-        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Evolución del patrimonio">
+        <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} style={{ height: H }} role="img" aria-label="Evolución del patrimonio">
           {ticksY.map((v, i) => (
             <g key={i}>
               <line x1={PL} x2={W - PR} y1={y(v)} y2={y(v)} stroke="var(--border)" strokeWidth="1" />

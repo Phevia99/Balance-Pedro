@@ -40,7 +40,7 @@ export default function Desglose({ cuentas }: { cuentas: Cuenta[] }) {
       </div>
 
       <div className="detalle">
-        <div className="serif" style={{ fontSize: "1.25rem", fontWeight: 700 }}>
+        <div className="serif" style={{ fontSize: "1.05rem", fontWeight: 700 }}>
           {c.cuenta} · <span style={{ color: c.monto_clp < 0 ? "var(--bad)" : undefined }}>{clp(c.monto_clp)}</span>
         </div>
         <div className="small muted">

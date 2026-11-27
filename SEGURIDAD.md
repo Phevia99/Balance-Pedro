@@ -1,5 +1,11 @@
 # Seguridad: que tus montos no queden públicos
 
+> **Actualización:** el acceso ya no es Basic Auth. Ahora se entra con **Google** y solo los correos de
+> `lib/auth.ts` (`CORREOS_PERMITIDOS`). Variables en Vercel: `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `AUTH_SECRET`
+> (≥ 32 caracteres). Si falta alguna, el sitio responde 503 (cerrado). Para dar o quitar acceso, edita esa lista y
+> haz push: la lista se comprueba en cada request, así que quitar un correo cierra su sesión al instante.
+> Las secciones de abajo sobre Basic Auth / `SITE_PASSWORD` quedan como referencia histórica.
+
 Un sitio en Vercel es **público por defecto**. Este dashboard contiene tus cuentas, deudas y patrimonio.
 
 ## Obligatorio
